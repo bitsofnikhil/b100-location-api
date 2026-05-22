@@ -1,0 +1,63 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model State {
+  id        Int        @id @default(autoincrement())
+  lgdCode   String     @unique
+  name      String
+  districts District[]
+}
+
+model District {
+  id           Int           @id @default(autoincrement())
+  lgdCode      String        @unique
+  name         String
+  stateId      Int
+  state        State         @relation(fields: [stateId], references: [id])
+  subDistricts SubDistrict[]
+}
+
+model SubDistrict {
+  id         Int        @id @default(autoincrement())
+  lgdCode    String     @unique
+  name       String
+  districtId Int
+  district   District   @relation(fields: [districtId], references: [id])
+  villages   Village[]
+}
+
+model Village {
+  id            Int         @id @default(autoincrement())
+  lgdCode       String      @unique
+  name          String
+  villageType   String?
+  status        String?
+  subDistrictId Int
+  subDistrict   SubDistrict @relation(fields: [subDistrictId], references: [id])
+}
+
+model ApiClient {
+  id            Int           @id @default(autoincrement())
+  companyName   String
+  apiKey        String        @unique
+  apiSecretHash String
+  isActive      Boolean       @default(true)
+  createdAt     DateTime      @default(now())
+  usageLogs     ApiUsageLog[]
+}
+
+model ApiUsageLog {
+  id             Int       @id @default(autoincrement())
+  clientId       Int
+  client         ApiClient @relation(fields: [clientId], references: [id])
+  endpoint       String
+  method         String
+  statusCode     Int
+  responseTimeMs Int?
+  createdAt      DateTime  @default(now())
+}
